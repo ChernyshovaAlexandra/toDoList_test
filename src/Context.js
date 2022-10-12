@@ -11,8 +11,8 @@ const Context = (props) => {
         setNewList(arr)
         setValue({ changeList, newList })
     }
-    const [value, setValue] = useState({ changeList, newList })
-  
+    const [value, setValue] = useState({ changeList, newList})
+
     return <CardContext.Provider value={value}>{props.children}</CardContext.Provider>
 }
 

@@ -1,14 +1,13 @@
 import * as React from 'react';
 import List from '@mui/material/List';
-import { Grid, Typography } from '@mui/material';
+import { Backdrop, Box, Divider, FormControlLabel, Grid, ListItem, Switch, Typography } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Container } from '@mui/system';
 import TasksAccorderon from './TasksAccordeon';
-import { QueryClient, QueryClientProvider, useQuery } from 'react-query'
 import { CardContext } from '../Context';
-const queryClient = new QueryClient()
+import { styles } from '../constants/styles';
 
 
 const darkTheme = createTheme({
@@ -18,24 +17,25 @@ const darkTheme = createTheme({
 });
 
 
-export default function FolderList() {
+export default function FolderList({ news, error, isLoading }) {
     const { newList } = React.useContext(CardContext)
+    const [message, setMessage] = React.useState(false)
+    const [menu, showMenu] = React.useState(false)
+    const [showNews, disableNews] = React.useState(true)
+
     React.useEffect(() => {
-        console.log(123, newList)
-    }, [newList])
+        if (news && news.articles) {
+            setMessage(news.articles[0].description)
+        }
+    }, [news])
+
+    const toggleMenu = () => {
+        showMenu(!menu)
+    }
     return (
         <ThemeProvider theme={darkTheme}>
             <CssBaseline />
-            <List sx={{
-                width: '100%',
-                maxWidth: 360,
-                backgroundColor: '#222222',
-                borderRadius: '30px',
-                p: '1rem 10px !important',
-                textAlign: 'left',
-                margin: '1rem auto 0',
-                maxHeight: '844px'
-            }}>
+            <List sx={styles.mainList}>
                 <Grid container spacing={2} justifyContent="space-between" sx={{ p: '0 10px!important' }}>
                     <Grid item xs sx={{ maxWidth: '100%' }}>
                         <Typography gutterBottom variant="h5" component="div" sx={{
@@ -46,22 +46,37 @@ export default function FolderList() {
                         </Typography>
                     </Grid>
                     <Grid item >
-                        <SettingsIcon />
+                        <SettingsIcon onClick={toggleMenu} sx={styles.settingsIcon} />
                     </Grid>
                 </Grid>
-                <Container sx={{
-                    maxHeight: '763px',
-                    p: '10px!important',
-                    overflow: 'auto'
-                }}>
-                    {newList.map(
-                        (item, id) => (
-                            <TasksAccorderon key={id} id={id} data={item} expandedDef={id === 0? true : false} />
-                        )
-                    )}
+                {menu &&
+                    <Box sx={styles.menuBox}>
+                        <List component="nav" aria-label="mailbox folders">
+                            <Divider />
+                            <ListItem button>
+                                <FormControlLabel
+                                  
+                                    value="start"
+                                    control={<Switch color="primary"  defaultChecked={showNews} />}
+                                    label={showNews ? "Disable news" : "Enable news"}
+                                    labelPlacement="start"
+                                    onChange={e => disableNews(e.target.checked)}
+                                />
+                            </ListItem>
+                            <Divider />
+                        </List>
+                    </Box>}
 
+                <Container sx={styles.mainContainer}>
+                    {newList.map(
+                        (item, id) => (<TasksAccorderon key={id} id={id} data={item} expandedDef={id === 0 ? true : false} />)
+                    )}
                 </Container>
             </List>
+
+            <Box sx={{ margin: '1rem auto', width: '100%' }}>
+                {message && showNews && <Typography sx={styles.newsLine}>{message}</Typography>}
+            </Box>
         </ThemeProvider>
     );
 }
